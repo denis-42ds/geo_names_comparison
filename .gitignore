@@ -1,0 +1,6 @@
+data/
+.git/
+.ipynb_checkpoints/
+*.docx
+*.zip
+
