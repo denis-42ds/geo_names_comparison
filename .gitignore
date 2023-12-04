@@ -1,6 +1,5 @@
 data/
+__pycache__/
 .git/
 .ipynb_checkpoints/
-*.docx
-*.zip
 
