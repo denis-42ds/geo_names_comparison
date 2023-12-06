@@ -1,31 +1,39 @@
-# Создание классов для sql таблицы
+import os
+import pandas as pd
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
-from sqlalchemy import Column, Integer, String, Float, CHAR
-from sqlalchemy.ext.declarative import declarative_base
+load_dotenv()
+db_password = os.getenv("DB_PASSWORD")
+db_username = os.getenv("DB_USERNAME")
+db_name = os.getenv("DB_NAME")
 
-Base = declarative_base()
+engine = create_engine(f"postgresql://{db_username}:{db_password}@localhost:5432/{db_name}")
 
-class GeoNames(Base):
-    __tablename__ = 'geonames_ru'
-    geonameid = Column(Integer, primary_key=True)
-    name = Column(String(200))
-    asciiname = Column(String(200))
-    alternatenames = Column(String(10000))
-    latitude = Column(Float)
-    longitude = Column(Float)
-    feature_class = Column(CHAR(1))
-    feature_code = Column(String(10))
-    country_code = Column(String(10))
-    cc2 = Column(String(10))
-    admin1_code = Column(String(20))
-    admin2_code = Column(String(80))
-    admin3_code = Column(String(20))
-    admin4_code = Column(String(20))
-    population = Column(Integer)
-    elevation = Column(Integer)
-    dem = Column(String(20))
-    timezone = Column(String(40))
-    modification_date = Column(String(10))
+geoname_columns = ['geonameid', 'name', 'asciiname', 'alternatenames', 
+                  'latitude', 'longitude', 'feature_class', 'feature_code', 
+                  'country_code', 'cc2', 'admin1_code', 'admin2_code', 
+                  'admin3_code', 'admin4_code', 'population, elevation',
+                  'dem', 'timezone', 'modification_date']
+
+def geoname_adding_to_db(file_path: str) -> str:
+    '''
+    Чтение файла и отправка данных в базу данных.
+    Параметры:
+    file_path (str): Путь к файлу.
+    Возвращает:
+    table_name (str): Наименование таблицы в базе данных.
+    '''
+    # Создание имени таблицы
+    table_name = 'geoname_' + (file_path.split('/')[-1].split('.')[0]).lower()
+
+    # Чтение файла в датафрейм
+    df = pd.read_csv(file_path, names=geoname_columns, index_col=False, delimiter='\t')
+
+    # Отправка данных в базу данных
+    df.to_sql(name=table_name, con=engine, if_exists='append')
+
+    return table_name
 
 
 '''
@@ -57,12 +65,12 @@ Most adm1 are FIPS codes. ISO codes are used for US, CH, BE and ME. UK and Greec
 The corresponding admin feature is found with the same countrycode and adminX codes and the respective feature code ADMx.
 '''
 
-class AlternateNames(Base):
-    __tablename__ = 'alternate_names'
-    alternateNameId = Column(Integer, primary_key=True)
-    geonameid = Column(Integer)
-    isolanguage = Column(String(7))
-    alternatename = Column(String(400))
+# class AlternateNames(Base):
+#     __tablename__ = 'alternate_names'
+#     alternateNameId = Column(Integer, primary_key=True)
+#     geonameid = Column(Integer)
+#     isolanguage = Column(String(7))
+#     alternatename = Column(String(400))
 
 
 '''
