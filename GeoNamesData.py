@@ -10,11 +10,25 @@ db_name = os.getenv("DB_NAME")
 
 engine = create_engine(f"postgresql://{db_username}:{db_password}@localhost:5432/{db_name}")
 
-geoname_columns = ['geonameid', 'name', 'asciiname', 'alternatenames', 
-                  'latitude', 'longitude', 'feature_class', 'feature_code', 
-                  'country_code', 'cc2', 'admin1_code', 'admin2_code', 
-                  'admin3_code', 'admin4_code', 'population, elevation',
-                  'dem', 'timezone', 'modification_date']
+geoname_columns = ['geonameid', 
+				   'name', 
+				   'asciiname', 
+				   'alternatenames',
+				   'latitude', 
+				   'longitude', 
+				   'feature_class', 
+				   'feature_code', 
+				   'country_code', 
+				   'cc2', 
+				   'admin1_code', 
+				   'admin2_code', 
+				   'admin3_code', 
+				   'admin4_code', 
+				   'population', 
+				   'elevation',
+				   'dem', 
+				   'timezone', 
+				   'modification_date']
 
 def geoname_adding_to_db(file_path: str) -> str:
     '''
@@ -63,6 +77,33 @@ modification date : date of last modification in yyyy-MM-dd format
 AdminCodes:
 Most adm1 are FIPS codes. ISO codes are used for US, CH, BE and ME. UK and Greece are using an additional level between country and fips code. The code '00' stands for general features where no specific adm1 code is defined.
 The corresponding admin feature is found with the same countrycode and adminX codes and the respective feature code ADMx.
+'''
+admin_codes_columns = ['concat_codes',
+					  'name',
+					  'asciiname',
+					  'geonameid']
+
+def admincodes_adding_to_db(file_path: str) -> str:
+    '''
+    Чтение файла и отправка данных в базу данных.
+    Параметры:
+    file_path (str): Путь к файлу.
+    Возвращает:
+    table_name (str): Наименование таблицы в базе данных.
+    '''
+    # Создание имени таблицы
+    table_name = 'admin_codes'
+
+    # Чтение файла в датафрейм
+    df = pd.read_csv(file_path, names=admin_codes_columns, index_col=False, delimiter='\t')
+
+    # Отправка данных в базу данных
+    df.to_sql(name=table_name, con=engine, if_exists='append')
+
+    return table_name
+'''
+admintocodes file: names for administrative subdivision 'admin2 code' (UTF8), 
+Format : concatenated codes <tab>name <tab> asciiname <tab> geonameId
 '''
 
 # class AlternateNames(Base):
